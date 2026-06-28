@@ -1,0 +1,11 @@
+# Minimal requirements for Streamlit Cloud deployment.
+# Only what streamlit_app.py + backend/engine.py actually need.
+streamlit>=1.30
+openpyxl>=3.1
+scikit-learn>=1.4
+numpy>=1.26
+
+# If you also want to run the local FastAPI version of the app, install:
+#   pip install fastapi uvicorn[standard] pydantic python-multipart
+# (kept out of this file because fastapi/streamlit have a starlette
+#  version conflict on Streamlit Cloud)

@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BenchBuddy AI · PMO Knowledge Assistant</title>
+    <meta name="description" content="BenchBuddy AI — turning bench-associate questions into instant, grounded, escalatable answers." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css?v=6" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='80' font-size='80'%3E%F0%9F%A4%96%3C/text%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-logo">BB</div>
+          <div>
+            <div class="brand-title">BenchBuddy <span class="brand-ai">AI</span></div>
+            <div class="brand-sub">PMO Knowledge Assistant</div>
+          </div>
+        </div>
+
+        <nav class="nav" aria-label="Primary">
+          <button class="nav-item active" data-tab="chat" title="Chat (G then C)">
+            <span class="nav-icon">💬</span> Chat
+            <span class="kbd">G C</span>
+          </button>
+          <button class="nav-item" data-tab="kb" title="Knowledge Base (G then K)">
+            <span class="nav-icon">📚</span> Knowledge Base
+            <span class="kbd">G K</span>
+          </button>
+          <button class="nav-item" data-tab="analytics" title="Analytics (G then A)">
+            <span class="nav-icon">📊</span> Analytics
+            <span class="kbd">G A</span>
+          </button>
+          <button class="nav-item" data-tab="tickets" title="Escalations (G then T)">
+            <span class="nav-icon">🎫</span> Tickets
+            <span class="kbd">G T</span>
+          </button>
+          <button class="nav-item" data-tab="about" title="About (G then ?)">
+            <span class="nav-icon">⚙️</span> About
+            <span class="kbd">G ?</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="quick-stats">
+            <div class="stat">
+              <div class="stat-num" id="stat-kb">—</div>
+              <div class="stat-label">FAQs</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num" id="stat-queries">0</div>
+              <div class="stat-label">Asked</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num" id="stat-tickets">0</div>
+              <div class="stat-label">Tickets</div>
+            </div>
+          </div>
+          <div class="kb-stat">
+            <span class="dot ok"></span>
+            <span id="kb-status">Loading KB…</span>
+          </div>
+          <div class="footer-actions">
+            <button class="icon-btn" id="theme-toggle" title="Toggle theme (T)">🌙</button>
+            <button class="icon-btn" id="shortcut-btn" title="Keyboard shortcuts (?)">⌨️</button>
+            <button class="icon-btn" id="export-btn" title="Export chat (E)">⬇️</button>
+            <button class="icon-btn" id="print-btn" title="Print conversation (P)">🖨️</button>
+          </div>
+          <div class="version">BenchBuddy AI · v<span id="app-version">1.0.0</span></div>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <main class="main">
+        <!-- Onboarding hint -->
+        <div class="onboard" id="onboard" hidden>
+          <span>👋 New here? Try a sample question below, then hit <span class="kbd">/</span> to ask anything.</span>
+          <button class="ghost-btn small" id="onboard-dismiss">Got it</button>
+        </div>
+
+        <!-- Chat tab -->
+        <section class="tab active" data-tab="chat">
+          <header class="topbar">
+            <div>
+              <h1>Turning questions into instant answers</h1>
+              <p class="subtitle">
+                Ask anything about bench, staffing, certifications, learning, resume, interviews or onboarding.
+              </p>
+            </div>
+            <div class="topbar-actions">
+              <button class="ghost-btn" id="clear-btn" title="Clear chat (Cmd/Ctrl + L)">🧹 Clear</button>
+              <button class="ghost-btn" id="copy-last-btn" title="Copy last answer (Cmd/Ctrl + Shift + C)">📋 Copy last</button>
+            </div>
+          </header>
+
+          <div class="chat" id="chat">
+            <div class="empty-state" id="empty-state">
+              <div class="hero">
+                <div class="hero-emoji">🤖</div>
+                <h2>Hi! I'm BenchBuddy.</h2>
+                <p>I answer PMO questions using the approved knowledge base — fast, grounded and with a confidence score so you know how sure I am. Every answer cites its sources, so nothing is made up.</p>
+              </div>
+              <div class="suggested-cats" id="cat-chips"></div>
+              <div class="chips" id="sample-chips"></div>
+              <div class="legend">
+                <span class="legend-item"><span class="badge badge-status" data-status="Answered">✓ Answered</span> grounded in the KB</span>
+                <span class="legend-item"><span class="badge badge-status" data-status="Escalate">↗ Escalated</span> routed to PMO</span>
+                <span class="legend-item"><span class="badge badge-status" data-status="Clarify">? Clarify</span> needs more detail</span>
+                <span class="legend-item"><span class="badge badge-status" data-status="OutOfScope">○ Out of scope</span> politely refused</span>
+              </div>
+            </div>
+          </div>
+
+          <form class="composer" id="composer" autocomplete="off">
+            <button type="button" class="composer-icon-btn" id="voice-btn" title="Voice input (V)">🎙️</button>
+            <input
+              type="text"
+              id="query-input"
+              placeholder="Ask a question…  press / to focus, ↑ for history"
+              maxlength="500"
+              required
+            />
+            <span class="char-counter" id="char-counter">0/500</span>
+            <button type="submit" id="send-btn">
+              <span class="send-label">Ask</span>
+              <span class="send-icon">➤</span>
+            </button>
+          </form>
+        </section>
+
+        <!-- KB tab -->
+        <section class="tab" data-tab="kb">
+          <header class="topbar">
+            <div>
+              <h1>Knowledge Base</h1>
+              <p class="subtitle"><span id="kb-count">—</span> approved PMO FAQ rows that ground every answer.</p>
+            </div>
+            <input type="search" id="kb-search" placeholder="Filter… (Cmd/Ctrl + K)" class="search-input" />
+          </header>
+          <div class="kb-filters" id="kb-filters"></div>
+          <div class="kb-grid" id="kb-grid"></div>
+        </section>
+
+        <!-- Analytics tab -->
+        <section class="tab" data-tab="analytics">
+          <header class="topbar">
+            <div>
+              <h1>Session Analytics</h1>
+              <p class="subtitle">Live metrics for this session — counts, confidence, latency.</p>
+            </div>
+            <button class="ghost-btn" id="refresh-analytics">↻ Refresh</button>
+          </header>
+          <div class="metrics" id="metrics"></div>
+          <div class="analytics-grid">
+            <div class="card">
+              <h3>By Category</h3>
+              <div id="cat-bars"></div>
+            </div>
+            <div class="card">
+              <h3>Status Mix</h3>
+              <div id="status-donut" class="donut-wrap"></div>
+            </div>
+            <div class="card span-2">
+              <h3>Recent Queries</h3>
+              <div id="recent-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tickets tab -->
+        <section class="tab" data-tab="tickets">
+          <header class="topbar">
+            <div>
+              <h1>Escalation Tickets</h1>
+              <p class="subtitle">Queries you (or the bot) routed to the PMO team this session.</p>
+            </div>
+            <button class="ghost-btn" id="refresh-tickets">↻ Refresh</button>
+          </header>
+          <div id="tickets-list" class="tickets-list"></div>
+        </section>
+
+        <!-- About tab -->
+        <section class="tab" data-tab="about">
+          <header class="topbar">
+            <div>
+              <h1>About BenchBuddy AI</h1>
+              <p class="subtitle">Built for the EngX Generative AI Kata — 19 Jun 2026.</p>
+            </div>
+          </header>
+          <div class="about-grid">
+            <div class="card">
+              <h3>What it does</h3>
+              <ul>
+                <li>Accepts free-text associate queries.</li>
+                <li>Retrieves grounding rows from the PMO FAQ knowledge base.</li>
+                <li>Returns <b>answer</b>, <b>confidence score</b>, <b>category</b> and <b>status</b>.</li>
+                <li>Escalates time-sensitive / negative-sentiment / out-of-knowledge queries to PMO.</li>
+                <li>Never hallucinates — every answer is composed only from KB rows.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Tech stack</h3>
+              <ul>
+                <li>Backend: <span class="pill">Python · FastAPI</span></li>
+                <li>Retrieval: <span class="pill">TF-IDF word + char n-grams · cosine</span></li>
+                <li>Frontend: <span class="pill">Vanilla HTML / CSS / JS · zero build step</span></li>
+                <li>Knowledge: <span class="pill" id="kb-size-pill">— FAQs</span></li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Guard-rails</h3>
+              <ul>
+                <li><b>Anti-hallucination</b>: answers verbatim from KB.</li>
+                <li><b>No external knowledge</b>: no web, no LLM world-model.</li>
+                <li><b>No approval / staffing decisions</b>: always escalates to PMO.</li>
+                <li><b>Out-of-scope detection</b>: polite refusal with <code>OutOfScope</code>.</li>
+                <li><b>Sentiment safety net</b>: negative messages auto-escalate.</li>
+                <li><b>Multi-intent splitter</b>: long messages handled cleanly.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>JSON contract</h3>
+              <p>POST <code>/api/query</code> with <code>{ "query": "..." }</code>:</p>
+<pre><code>{
+  "answer": "...",
+  "confidence": 0.87,
+  "confidence_pct": 87,
+  "category": "Certification",
+  "status": "Answered",
+  "escalation_target": null,
+  "sources": [{"id": 26, "rank": 1, ...}],
+  "intents_detected": ["Certification"],
+  "sentiment": "neutral",
+  "latency_ms": 4
+}</code></pre>
+            </div>
+            <div class="card">
+              <h3>Keyboard shortcuts</h3>
+              <ul class="kbd-list">
+                <li><span class="kbd">/</span> focus the question box</li>
+                <li><span class="kbd">↑</span><span class="kbd">↓</span> browse query history</li>
+                <li><span class="kbd">Esc</span> close any modal</li>
+                <li><span class="kbd">Cmd/Ctrl</span>+<span class="kbd">K</span> filter the Knowledge Base</li>
+                <li><span class="kbd">Cmd/Ctrl</span>+<span class="kbd">L</span> clear the chat</li>
+                <li><span class="kbd">Cmd/Ctrl</span>+<span class="kbd">Shift</span>+<span class="kbd">C</span> copy the last answer</li>
+                <li><span class="kbd">G</span> then <span class="kbd">C</span> / <span class="kbd">K</span> / <span class="kbd">A</span> / <span class="kbd">T</span> jump to tabs</li>
+                <li><span class="kbd">T</span> toggle theme</li>
+                <li><span class="kbd">V</span> start voice input (Chrome / Edge)</li>
+                <li><span class="kbd">?</span> show this shortcut card</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>API endpoints</h3>
+              <ul class="api-list">
+                <li><span class="method">POST</span> <code>/api/query</code> — ask a question</li>
+                <li><span class="method">GET</span> <code>/api/faqs</code> — full KB dump</li>
+                <li><span class="method">GET</span> <code>/api/kb/{id}</code> — one FAQ by id</li>
+                <li><span class="method">GET</span> <code>/api/related/{id}</code> — related FAQs</li>
+                <li><span class="method">GET</span> <code>/api/categories</code> — KB taxonomy + counts</li>
+                <li><span class="method">GET</span> <code>/api/analytics</code> — session analytics</li>
+                <li><span class="method">POST</span> <code>/api/escalations</code> — submit to PMO</li>
+                <li><span class="method">GET</span> <code>/api/escalations</code> — ticket list</li>
+                <li><span class="method">GET</span> <code>/api/health</code> — liveness probe</li>
+                <li><span class="method">GET</span> <code>/api/samples</code> — sample queries</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Templates -->
+    <template id="msg-user-template">
+      <div class="msg msg-user">
+        <div class="msg-avatar">🧑‍💻</div>
+        <div class="msg-bubble">
+          <div class="msg-text"></div>
+          <div class="msg-time"></div>
+        </div>
+      </div>
+    </template>
+
+    <template id="msg-bot-template">
+      <div class="msg msg-bot">
+        <div class="msg-avatar">🤖</div>
+        <div class="msg-bubble">
+          <div class="msg-meta">
+            <span class="badge badge-category"></span>
+            <span class="badge badge-status"></span>
+            <span class="badge badge-sentiment"></span>
+            <span class="badge badge-latency"></span>
+          </div>
+          <div class="msg-text"></div>
+          <div class="confidence" title="Click to learn how this is calculated">
+            <div class="confidence-label">
+              <span>AI confidence</span>
+              <span class="confidence-pct">0%</span>
+            </div>
+            <div class="confidence-bar">
+              <div class="confidence-bar-fill"></div>
+            </div>
+          </div>
+          <div class="msg-actions">
+            <button class="msg-action copy-btn" title="Copy answer">📋 Copy</button>
+            <button class="msg-action source-toggle-btn" title="Show sources">📎 Sources</button>
+            <button class="msg-action escalate-btn" title="Submit to PMO" hidden>🚨 Submit to PMO</button>
+            <button class="msg-action followup-btn" title="Show follow-up questions" hidden>💡 Follow-ups</button>
+          </div>
+          <div class="sources-panel" hidden>
+            <div class="sources-list"></div>
+          </div>
+          <div class="followups-panel" hidden>
+            <div class="followups-label">You may also ask:</div>
+            <div class="followups-list"></div>
+          </div>
+          <div class="escalation" hidden>
+            <span class="escalation-icon">📣</span>
+            <span class="escalation-text"></span>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template id="typing-template">
+      <div class="msg msg-bot typing">
+        <div class="msg-avatar">🤖</div>
+        <div class="msg-bubble">
+          <div class="typing-dots"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Modal -->
+    <div class="modal-backdrop" id="modal-backdrop" hidden aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-header">
+          <h3 id="modal-title"></h3>
+          <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+      </div>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toasts" id="toasts" aria-live="polite"></div>
+
+    <script src="/static/app.js?v=6"></script>
+  </body>
+</html>

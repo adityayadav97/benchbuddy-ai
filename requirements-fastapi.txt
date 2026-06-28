@@ -1,0 +1,9 @@
+# Use this file ONLY for the local FastAPI app (run.sh / uvicorn).
+# Streamlit Cloud should use requirements.txt instead.
+#
+#   pip install -r requirements.txt -r requirements-fastapi.txt
+
+fastapi>=0.115
+uvicorn[standard]>=0.32
+pydantic>=2.9
+python-multipart>=0.0.12

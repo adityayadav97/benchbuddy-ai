@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Local logs / generated previews
+artifacts/preview_*.png
+artifacts/*.pdf.png
+artifacts/*.pptx.png
+artifacts/page*.png
+/tmp/
+*.log
+
+# Streamlit secrets (if any are ever added)
+.streamlit/secrets.toml
+
+# Private folders — kept locally for the kata, NOT shipped to the public repo
+artifacts/
+prompts/
+
+# Build artefacts
+build/
+dist/
+*.egg
+.DS_Store
